@@ -1,5 +1,5 @@
 {
-    "Code OP Com.":"code_op",
+    "Code OP Com.":"code_op", // drop this column
     "Libellé OP Com.":"delivery",
     "Vitrine collection":"window_display",
     "Cible":"target",
@@ -17,7 +17,7 @@
     "Saisonnalité":"seasonality",
     "PVC France":"price",
     "Rang":"weekly_rank",
-    "Picto":"photo",
+    "Picto":"photo", // drop this column
     "CA Net TTC\nSem.\nN":"turnover",
     "CA Net TTC\nSem.-1\nN":"turnover_w_sub1",
     "CA Net TTC\nSem.-2\nN":"turnover_w_sub2",
@@ -38,14 +38,14 @@
     "Qté vendues\nCumul\nN":"cum_quantity_sold",
     "Nb RCT\nen vente\nN":"num_sizes",
     "Nb PDV\navec RC en vente\nN":"num_stores",
-    "Vte Moyennes\nRCT/Point de vente\nN":"drop_this_column",
+    "Vte Moyennes\nRCT/Point de vente\nN":"drop_this_column", // drop this column
     "Semaine 1ère vte\nN":"first_week_sale",
     "Défilement\nN":"rate_of_sale",
     "Tx Ecoul\nCumul\nN":"cum_sellthrough",
-    "Engagement global\nN":"engagement",
-    "Tx Ecoul. sur Engt\nCumul\nN":"engagement_sellthrough",
+    "Engagement global\nN":"engagement", // drop this column
+    "Tx Ecoul. sur Engt\nCumul\nN":"engagement_sellthrough", // drop this column
     "Stk Dispo\nEntrepot\nN":"warehouse_stock",
-    "Stk hors Dispo\npour Réassort\nN":"no_warehouse_stock",
+    "Stk hors Dispo\npour Réassort\nN":"no_warehouse_stock", // drop this column
     "Stk Dispo\nRAL\nCdeGen\nN":"zero_stock",
     "Stk Dispo\npour Réassort\nN":"avail_warehouse_stock",
     "%":"%"
