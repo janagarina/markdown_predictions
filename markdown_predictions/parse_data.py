@@ -9,29 +9,30 @@ import logging
 import pandas as pd
 
 
-JSON_PATH = "markdown_predictions"
+JSON_PATH = os.path.join(os.path.dirname(os.getcwd()),"markdown_predictions")
 COLUMN_DICT = "columns_dict.json"
 SELECTED_COLS_DICT = "selected_columns.json"
 
+os.path.join(os.path.dirname(os.getcwd()),"markdown_predictions")
 
 class LoadSalesData:
-    
+
     def __init__(self, sales_data: pd.DataFrame):
         self.sales_data = sales_data
-    
+
     @staticmethod
     def extract_season(file_path: str, file_name: str):
         """ Regex the file name to extract the season """
         # Define the regex expression
         regex_expr = re.compile(rf"{file_path}\/(?P<season>\w+) W.+")
         m = regex_expr.search(file_name)
-            
+
         if m:
             return m.group('season')
         else:
             logging.critical(f"Season cannot be extracted from {file_name}.")
             return None
-    
+
     @staticmethod
     def parse_json(json_path: str):
         """ Parse a JSON file to python dictionary """
@@ -43,57 +44,67 @@ class LoadSalesData:
     def read_in_files(file_path: str, pre_post_toggle: str, column_mapping: dict, selected_columns: dict):
         """ Read in files from local directory """
         all_sales_data = []
-        
+
         for seasonal_file in glob.glob(f'{file_path}/*{pre_post_toggle}*'):
             logging.info(f"Reading file: {seasonal_file}")
-            
+
             # Parse csv into dataframe
             seasonal_data = pd.read_csv(seasonal_file, index_col=None, encoding='utf-8')
 
             # Remove all escape characters
             seasonal_data.columns = [col.replace('\r','').replace('\n','').lower() for col in seasonal_data.columns]
-            
+
             # Rename the columns
             seasonal_data.rename(columns=column_mapping, inplace=True)
-            
+
             # If not all selected columns in the csv, report & exit.
             if not set(seasonal_data.columns).issuperset(set(selected_columns)):
                 print(f"Not all selected columns present in csv file: {seasonal_file}.")
                 print(f"Missing columns: {set(selected_columns).difference(set(seasonal_data.columns))}\nExiting.")
                 exit(1)
-            
+
             # Select the columns
             seasonal_data = seasonal_data[selected_columns]
-            
+
             # Add season as a column to the dataframe
             season = LoadSalesData.extract_season(file_path=file_path, file_name=seasonal_file)
             if not season:
                 # If season unable to be extracted skip
                 continue
             seasonal_data['season'] = season
-            
+
             # Add suffix
             seasonal_data = seasonal_data.add_suffix(suffix=f"_{pre_post_toggle}")
             all_sales_data.append(seasonal_data)
 
         return pd.concat(all_sales_data, axis=0, ignore_index=True)
-    
+
     @staticmethod
     def make_dict_lowercase(input_dict: dict):
         lower_case_dict = {}
         for k, v in input_dict.items():
-            lower_case_dict[k.lower()] = v  
+            lower_case_dict[k.lower()] = v
         return lower_case_dict
 
+    @staticmethod
+    def remove_commas(number_string: str):
+        return str(number_string).replace(",", "")
+
+    @staticmethod
+    def format_percentages(number_string: str):
+        if "%" in number_string:
+            return LoadSalesData.remove_commas(str(float(number_string.replace("%",""))/100))
+        return number_string
+
     @classmethod
-    def load_in_files(cls, file_path: str):
+    def load_in_files(cls, file_path: str, sales_target_toggle: bool):
         """ Load in Files """
         mapping = LoadSalesData.make_dict_lowercase(LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, COLUMN_DICT)))
         selected_columns = LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, SELECTED_COLS_DICT))
-        
+
         pre_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="PRE", column_mapping=mapping, selected_columns=selected_columns["PRE"])
         post_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="POST", column_mapping=mapping, selected_columns=selected_columns["POST"])
-        
+
         sales_data = pd.merge(pre_sales_data,
                               post_sales_data,
                               left_on=[key + "_PRE" for key in selected_columns["reference_keys"]] ,
@@ -101,6 +112,16 @@ class LoadSalesData:
                               how="inner")
 
         sales_data.drop(columns=["season_POST"], inplace=True)
+
+        if sales_target_toggle:
+            for col in ["cum_quantity_sold_POST", "cum_quantity_sold_PRE"]:
+                # remove  initial comma seperation
+                sales_data[col + "_ghost"] = sales_data[col].apply(lambda s: LoadSalesData.remove_commas(s))
+                # remove percentage formats
+                sales_data[col + "_ghost"] = sales_data[col+ "_ghost"].apply(lambda s: LoadSalesData.format_percentages(s))
+            sales_data["2week_sales"] = sales_data["cum_quantity_sold_POST_ghost"].astype(float) - sales_data["cum_quantity_sold_PRE_ghost"].astype(float)
+            sales_data.drop(columns=["cum_quantity_sold_POST_ghost", "cum_quantity_sold_PRE_ghost"], inplace=True)
+
         return cls(sales_data)
 
 
