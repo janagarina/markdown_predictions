@@ -10,6 +10,8 @@ import pandas as pd
 
 
 JSON_PATH = "markdown_predictions"
+COLUMN_DICT = "columns_dict.json"
+SELECTED_COLS_DICT = "selected_columns.json"
 
 
 class LoadSalesData:
@@ -31,41 +33,68 @@ class LoadSalesData:
             return None
     
     @staticmethod
-    def read_in_files(file_path: str, pre_post_toggle: str):
+    def parse_json(json_path: str):
+        """ Parse a JSON file to python dictionary """
+        with open(json_path) as f:
+            parsed_dict = json.load(f)
+        return parsed_dict
+
+    @staticmethod
+    def read_in_files(file_path: str, pre_post_toggle: str, column_mapping: dict, selected_columns: dict):
+        """ Read in files from local directory """
         all_sales_data = []
+        
         for seasonal_file in glob.glob(f'{file_path}/*{pre_post_toggle}*'):
             logging.info(f"Reading file: {seasonal_file}")
-            season = LoadSalesData.extract_season(file_path=file_path, file_name=seasonal_file)
             
+            # Parse csv into dataframe
+            seasonal_data = pd.read_csv(seasonal_file, index_col=None, encoding='utf-8')
+
+            # Remove all escape characters
+            seasonal_data.columns = [col.replace('\r','').replace('\n','') for col in seasonal_data.columns]
+            
+            # Rename the columns
+            seasonal_data.rename(columns=column_mapping, inplace=True)
+            
+            # If not all selected columns in the csv, report & exit.
+            if not set(seasonal_data.columns).issuperset(set(selected_columns)):
+                print(f"Not all selected columns present in csv file: {seasonal_file}.")
+                print(f"Missing columns: {set(selected_columns).difference(set(seasonal_data.columns))}\nExiting.")
+                exit(1)
+            
+            # Select the columns
+            seasonal_data = seasonal_data[selected_columns]
+            
+            # Add season as a column to the dataframe
+            season = LoadSalesData.extract_season(file_path=file_path, file_name=seasonal_file)
             if not season:
                 # If season unable to be extracted skip
                 continue
-            
-            with open(os.path.join(JSON_PATH, f'{pre_post_toggle.lower()}_columns_to_extract.json')) as f:
-                feature_cols = json.load(f)
-            
-            # Parse csv into dataframe
-            pre_season_data = pd.read_csv(seasonal_file, index_col=None, encoding='utf-8', usecols=list(feature_cols.keys()))
-            pre_season_data.rename(columns=feature_cols, inplace=True)
-            
-            # Add season as a column to the dataframe
-            pre_season_data['season'] = season
+            seasonal_data['season'] = season
             
             # Add suffix
-            pre_season_data = pre_season_data.add_suffix(suffix=f"_{pre_post_toggle}")
-            
-            all_sales_data.append(pre_season_data)
+            seasonal_data = seasonal_data.add_suffix(suffix=f"_{pre_post_toggle}")
+            all_sales_data.append(seasonal_data)
+
         return pd.concat(all_sales_data, axis=0, ignore_index=True)
 
     @classmethod
     def load_in_files(cls, file_path: str):
         """ Load in Files """
-        # pre_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="PRE")
-        post_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="POST")
+        mapping = LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, COLUMN_DICT))
+        selected_columns = LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, SELECTED_COLS_DICT))
         
-        # sales_data = pd.merge(pre_sales_data, post_sales_data, left_on=["Reference_PRE", "season_PRE"], right_on=["Reference_POST", "season_POST"],  how="inner")
-        # sales_data.drop(columns=["season_POST"], inplace=True)
-        # return cls(sales_data)
+        pre_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="PRE", column_mapping=mapping, selected_columns=selected_columns["PRE"])
+        post_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="POST", column_mapping=mapping, selected_columns=selected_columns["POST"])
+        
+        sales_data = pd.merge(pre_sales_data,
+                              post_sales_data,
+                              left_on=[key + "_PRE" for key in selected_columns["reference_keys"]] ,
+                              right_on=[key + "_POST" for key in selected_columns["reference_keys"]],
+                              how="inner")
+
+        sales_data.drop(columns=["season_POST"], inplace=True)
+        return cls(sales_data)
 
 
 if __name__ == "__main__":
