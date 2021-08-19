@@ -51,7 +51,7 @@ class LoadSalesData:
             seasonal_data = pd.read_csv(seasonal_file, index_col=None, encoding='utf-8')
 
             # Remove all escape characters
-            seasonal_data.columns = [col.replace('\r','').replace('\n','') for col in seasonal_data.columns]
+            seasonal_data.columns = [col.replace('\r','').replace('\n','').lower() for col in seasonal_data.columns]
             
             # Rename the columns
             seasonal_data.rename(columns=column_mapping, inplace=True)
@@ -77,11 +77,18 @@ class LoadSalesData:
             all_sales_data.append(seasonal_data)
 
         return pd.concat(all_sales_data, axis=0, ignore_index=True)
+    
+    @staticmethod
+    def make_dict_lowercase(input_dict: dict):
+        lower_case_dict = {}
+        for k, v in input_dict.items():
+            lower_case_dict[k.lower()] = v  
+        return lower_case_dict
 
     @classmethod
     def load_in_files(cls, file_path: str):
         """ Load in Files """
-        mapping = LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, COLUMN_DICT))
+        mapping = LoadSalesData.make_dict_lowercase(LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, COLUMN_DICT)))
         selected_columns = LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, SELECTED_COLS_DICT))
         
         pre_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="PRE", column_mapping=mapping, selected_columns=selected_columns["PRE"])

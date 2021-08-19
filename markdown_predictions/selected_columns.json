@@ -15,6 +15,7 @@
          "price",
          "weekly_rank",
          "turnover",
+         "sub_target",
          "turnover_w_sub1",
          "turnover_w_sub2",
          "turnover_w_sub3",
