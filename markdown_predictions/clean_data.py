@@ -3,10 +3,12 @@ from types import prepare_class
 from numpy.core.numeric import True_
 import pandas as pd
 
-from parse_data import LoadSalesData
+from markdown_predictions.parse_data import LoadSalesData
+
 
 PRICE_COLS = ["price_PRE", "price_POST"]
 SYMBOLS_TO_REMOVE = ["€", "%"]
+
 
 class PreProcessor:
     
