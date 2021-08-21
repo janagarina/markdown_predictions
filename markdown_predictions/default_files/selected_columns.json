@@ -40,7 +40,7 @@
          "warehouse_stock",
          "zero_stock",
          "avail_warehouse_stock",
-         "%"],
+         "markdown"],
  "POST": ["reference",
           "seasonality",
           "price",
@@ -70,6 +70,6 @@
           "warehouse_stock",
           "zero_stock",
           "avail_warehouse_stock",
-          "%"],
+          "markdown"],
     "reference_keys": ["reference", "season"]
 }

@@ -42,5 +42,5 @@
     "Stk DispoEntrepotN":"warehouse_stock",
     "Stk DispoRALCdeGenN":"zero_stock",
     "Stk Dispopour RéassortN":"avail_warehouse_stock",
-    "%":"%"
+    "%":"markdown"
 }

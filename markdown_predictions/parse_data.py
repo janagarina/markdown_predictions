@@ -9,7 +9,7 @@ import logging
 import pandas as pd
 
 
-JSON_PATH = os.path.join("markdown_predictions", "default_files")
+JSON_PATH = "default_files"
 COLUMN_DICT = "columns_dict.json"
 SELECTED_COLS_DICT = "selected_columns.json"
 
