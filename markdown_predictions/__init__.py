@@ -1,6 +1,6 @@
 # from os.path import isfile
 # from os.path import dirname
-from markdown_predictions.trainer import get_data
+from markdown_predictions.trainer import get_data, get_path
 
 # version_file = '{}/version.txt'.format(dirname(__file__))
 

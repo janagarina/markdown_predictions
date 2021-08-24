@@ -1,17 +1,13 @@
 """ Reads in the sales data and loads into a pandas dataframe """
 import collections
 import glob
-import json
 from json import encoder
 import re
 import os
 import logging
 import pandas as pd
 
-
-JSON_PATH = "default_files"
-COLUMN_DICT = "columns_dict.json"
-SELECTED_COLS_DICT = "selected_columns.json"
+from markdown_predictions.selection import COLUMN_SELECTION, COLUMN_MAPPING
 
 
 class LoadSalesData:
@@ -31,13 +27,6 @@ class LoadSalesData:
         else:
             logging.critical(f"Season cannot be extracted from {file_name}.")
             return None
-    
-    @staticmethod
-    def parse_json(json_path: str):
-        """ Parse a JSON file to python dictionary """
-        with open(json_path) as f:
-            parsed_dict = json.load(f)
-        return parsed_dict
 
     @staticmethod
     def read_in_files(file_path: str, pre_post_toggle: str, column_mapping: dict, selected_columns: dict):
@@ -88,16 +77,15 @@ class LoadSalesData:
     @classmethod
     def load_in_files(cls, file_path: str):
         """ Load in Files """
-        mapping = LoadSalesData.make_dict_lowercase(LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, COLUMN_DICT)))
-        selected_columns = LoadSalesData.parse_json(json_path=os.path.join(JSON_PATH, SELECTED_COLS_DICT))
+        mapping = LoadSalesData.make_dict_lowercase(COLUMN_MAPPING)
         
-        pre_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="PRE", column_mapping=mapping, selected_columns=selected_columns["PRE"])
-        post_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="POST", column_mapping=mapping, selected_columns=selected_columns["POST"])
+        pre_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="PRE", column_mapping=mapping, selected_columns=COLUMN_SELECTION["PRE"])
+        post_sales_data = LoadSalesData.read_in_files(file_path=file_path, pre_post_toggle="POST", column_mapping=mapping, selected_columns=COLUMN_SELECTION["POST"])
         
         sales_data = pd.merge(pre_sales_data,
                               post_sales_data,
-                              left_on=[key + "_PRE" for key in selected_columns["reference_keys"]] ,
-                              right_on=[key + "_POST" for key in selected_columns["reference_keys"]],
+                              left_on=[key + "_PRE" for key in COLUMN_SELECTION["reference_keys"]] ,
+                              right_on=[key + "_POST" for key in COLUMN_SELECTION["reference_keys"]],
                               how="inner")
 
         sales_data.drop(columns=["season_POST"], inplace=True)

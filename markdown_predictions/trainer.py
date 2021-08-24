@@ -2,6 +2,7 @@ from markdown_predictions.clean_data import PreProcessor
 from markdown_predictions.parse_data import LoadSalesData
 
 import pandas as pd
+import os
 
 
 def get_data(data_path: str) -> pd.DataFrame:
@@ -11,6 +12,9 @@ def get_data(data_path: str) -> pd.DataFrame:
     pre_processor.clean_up_data()
     
     return pre_processor.df
+
+def get_path():
+    print(os.listdir())
 
 
 if __name__ == "__main__":
