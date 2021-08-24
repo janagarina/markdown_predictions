@@ -7,7 +7,6 @@ from markdown_predictions.parse_data import LoadSalesData
 
 
 PRICE_COLS = ["price_PRE", "price_POST"]
-SYMBOLS_TO_REMOVE = ["€", "%"]
 
 
 class PreProcessor:
@@ -28,17 +27,19 @@ class PreProcessor:
     def replace_decimal_in_price_cols(self):
         """ Replace the comma with a decimal point in price columns """
         self.df[PRICE_COLS] = self.df[PRICE_COLS].replace({r',': '.'}, regex=True)
-
-    def remove_symbols(self):
-        """ Replace symbols in columns, otherwise cannot convert to float """
-        for symbol in SYMBOLS_TO_REMOVE:
-            self.df = self.df.replace({rf'([ +]?){symbol}': ''}, regex=True)
+    
+    def clean_up_symbols(self, x):
+        """ Remove symbols and commas from columns """
+        x = x.replace(',', '').replace('€', '')
+        if '%' in x:
+            x =  str(float(x.replace('%', '')) / 100.)
+        return x
         
     def make_columns_numeric(self):
         """ Try to make columns numeric, else leave as original type """
         for col in self.df.columns:
             try:
-                self.df[col] = self.df[col].replace({r',': ''}, regex=True).astype(float)
+                self.df[col] = self.df[col].apply(lambda x: self.clean_up_symbols(x)).astype(float)
                 self.numeric_cols.append(col)
             except ValueError as e:
                 # print(e)
@@ -48,7 +49,6 @@ class PreProcessor:
         """ Clean up the dataframe """
         self.drop_rows_without_reference()
         self.drop_row_with_missing_entries()
-        self.remove_symbols()
         self.replace_decimal_in_price_cols()
         self.make_columns_numeric()        
                 
