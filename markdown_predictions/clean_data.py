@@ -2,18 +2,20 @@
 from types import prepare_class
 from numpy.core.numeric import True_
 import pandas as pd
+from datetime import datetime, timedelta
 
 from markdown_predictions.parse_data import LoadSalesData
 
 
 PRICE_COLS = ["price_PRE", "price_POST"]
 TARGET_SALES = ["quantity_sold_POST", "quantity_sold_sub1_POST"]
+DATE_COLS = ["first_week_sale_POST"]
 
 
 class PreProcessor:
 
     def __init__(self, df: pd.DataFrame):
-        self.df = df
+        self.df = df.astype(str) # cast as strings to process
         self.numeric_cols = []
         self.object_cols = []
 
@@ -22,8 +24,9 @@ class PreProcessor:
         self.df = self.df[self.df.reference_PRE.notnull()]
 
     def drop_row_with_missing_entries(self):
-        """ Drop all rows with a '-' within them """
+        """ Drop all rows with a '-' or 'nan' within them """
         self.df = self.df[~(self.df == '-').any(axis=1)]
+        self.df = self.df[~(self.df == 'nan').any(axis=1)]
 
     def replace_decimal_in_price_cols(self):
         """ Replace the comma with a decimal point in price columns """
@@ -47,9 +50,16 @@ class PreProcessor:
                 self.object_cols.append(col)
 
     def add_2week_sales(self):
-        """ Add Sales Target """
+        """ Add sales target """
         self.df["two_week_sales"] = self.df[TARGET_SALES].sum(axis=1)
         self.df.drop(TARGET_SALES, axis=1, inplace=True)
+
+    def parse_dates(self):
+        """ Parse dates - supports '%Y-S%U' format currently"""
+        for col in DATE_COLS:
+            self.df["weeks_plus"] = self.df[col].apply(lambda dt: timedelta(weeks=int(dt[-2:])))
+            self.df[col] = self.df[col].apply(lambda dt: datetime.strptime(dt,"%Y-S%U")) + self.df["weeks_plus"]
+            self.df.drop("weeks_plus", axis=1, inplace=True)
 
     def clean_up_data(self):
         """ Clean up the dataframe """
@@ -58,6 +68,7 @@ class PreProcessor:
         self.replace_decimal_in_price_cols()
         self.make_columns_numeric()
         self.add_2week_sales()
+        self.parse_dates()
 
 if __name__ == "__main__":
     # Load in the data locally into a single dataframe
