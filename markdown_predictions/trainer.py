@@ -13,8 +13,13 @@ def get_data(data_path: str) -> pd.DataFrame:
     
     return pre_processor.df
 
-def get_path():
-    print(os.listdir())
+
+def get_test_data(data_path: str) -> pd.DataFrame:
+    """ Load in test data """
+    load_data = LoadSalesData.load_in_test_file(data_path)
+    pre_processor = PreProcessor(df=load_data.sales_data)
+    pre_processor.clean_up_data(train_set=False)
+    return pre_processor.df
 
 
 if __name__ == "__main__":

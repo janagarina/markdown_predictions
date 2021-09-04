@@ -30,7 +30,10 @@ class PreProcessor:
 
     def replace_decimal_in_price_cols(self):
         """ Replace the comma with a decimal point in price columns """
-        self.df[PRICE_COLS] = self.df[PRICE_COLS].replace({r',': '.'}, regex=True)
+        for price_col in PRICE_COLS:
+            if not price_col in self.df:
+                continue
+            self.df[price_col] = self.df[price_col].replace({r',': '.'}, regex=True)
 
     def clean_up_symbols(self, x):
         """ Remove symbols and commas from columns """
@@ -61,14 +64,16 @@ class PreProcessor:
             self.df[col] = self.df[col].apply(lambda dt: datetime.strptime(dt,"%Y-S%U")) + self.df["weeks_plus"]
             self.df.drop("weeks_plus", axis=1, inplace=True)
 
-    def clean_up_data(self):
+    def clean_up_data(self, train_set: bool=True):
         """ Clean up the dataframe """
         self.drop_rows_without_reference()
         self.drop_row_with_missing_entries()
         self.replace_decimal_in_price_cols()
         self.make_columns_numeric()
-        self.add_2week_sales()
-        self.parse_dates()
+        if train_set:
+            self.add_2week_sales()
+            self.parse_dates()
+
 
 if __name__ == "__main__":
     # Load in the data locally into a single dataframe
