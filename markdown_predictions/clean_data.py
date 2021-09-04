@@ -75,6 +75,20 @@ class PreProcessor:
             self.parse_dates()
 
 
+def outlier_scan(df, cols, threshold=0.1):
+    """ Detect numeric outliers based upon quantile threshold """
+    liers = set([])
+    index = df.index.copy()
+    for col in cols:
+        Q1 = df[[col]].quantile(threshold)[0]
+        Q3 = df[[col]].quantile(1-threshold)[0]
+        IQR = Q3 - Q1
+        low_liers = df[[col]][df[col] < Q1 - 1.5 * IQR].index.tolist()
+        high_liers = df[[col]][df[col] > Q3 + 1.5 * IQR].index.tolist()
+        liers.update(low_liers)
+        liers.update(high_liers)
+    return sorted(list(liers))
+
 if __name__ == "__main__":
     # Load in the data locally into a single dataframe
     loaded_data = LoadSalesData.load_in_files("raw_data")
