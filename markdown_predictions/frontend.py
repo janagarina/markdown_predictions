@@ -21,3 +21,6 @@ if file_csv:
 
 if st.button('Set Markdowns'):
     pass
+
+number = st.number_input('Choose a markdown', min_value=0, max_value = 50, step=10, value=0)
+st.write('The current number is ', number)
