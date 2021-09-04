@@ -15,9 +15,15 @@ if file_csv:
     df = pd.read_csv(file_csv)
     df
     # TODO: Fill out remainng summary items once get_data is implemented
-    st.text('CSV Summary')
+    st.write('CSV Summary')
     num_products = f'Number of products: {len(df)}'
     num_products
+    df['full_stock'] = df['warehouse'] + df['store_stock']
+    stock = f"Total stock: {df['full_stock'].sum()}"
+    stock
+    st.write('Stock per target & category')
+    target_stock = df.groupby(['Sous-cible','Catégorie'])['full_stock'].agg('sum')
+    target_stock
 
 if st.button('Set Markdowns'):
     pass
