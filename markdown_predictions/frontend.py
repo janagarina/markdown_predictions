@@ -1,5 +1,4 @@
 import streamlit as st
-
 import numpy as np
 import pandas as pd
 from markdown_predictions.trainer import get_data
@@ -16,14 +15,20 @@ if file_csv:
     df
     # TODO: Fill out remainng summary items once get_data is implemented
     st.write('CSV Summary')
-    num_products = f'Number of products: {len(df)}'
-    num_products
+    num_products = len(df)
+    st.write(f'Number of products: {num_products}')
     df['full_stock'] = df['warehouse'] + df['store_stock']
-    stock = f"Total stock: {df['full_stock'].sum()}"
-    stock
+    stock = df['full_stock'].sum()
+    st.write(f'Total stock: {stock}')
     st.write('Stock per target & category')
+    # TODO: Updte column names after get_data merge
     target_stock = df.groupby(['Sous-cible','Catégorie'])['full_stock'].agg('sum')
     target_stock
+    target = st.number_input('Set unit sales target', min_value=0, max_value = 100, value=0)
+    target_percent = target/100
+    unit_target = float(stock) * target_percent
+    st.write(f'Unit sales target: {round(unit_target)}')
+    
 
 if st.button('Set Markdowns'):
     pass
