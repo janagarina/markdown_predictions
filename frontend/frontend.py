@@ -12,10 +12,10 @@ file_csv = st.file_uploader("Upload your CSV here", type=([".csv"]))
 
 if file_csv:
     df = get_test_data(f'raw_data/{file_csv.name}')
-    if "persisted_variable" not in st.session_state:
+    if "df" not in st.session_state:
         st.session_state.df = df
-    df
-    # TODO: Fill out remainng summary items once get_data is implemented
+        st.session_state.df['markdown_PRE'] = 0.0
+    st.session_state.df
     st.write('CSV Summary')
     num_products = len(df)
     st.write(f'Number of products: {num_products}')
