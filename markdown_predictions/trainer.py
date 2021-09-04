@@ -122,7 +122,9 @@ class Trainer(object):
 
 def train_and_save_model(df: pd.DataFrame, model_path: str=""):
     """ Train and save model -- markdown_model.joblib """
-    X = df.drop("two_week_sales", axis=1)
+    y = df.pop("two_week_sales")
+    X = df
+    
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     # Train and save model, locally and
     trainer = Trainer(X=X_train, y=y_train, remove_outliers=True)
