@@ -5,6 +5,7 @@ twine
 wheel>=0.29
 
 # data science
+prince
 numpy
 pandas
 scikit-learn
@@ -25,6 +26,7 @@ s3fs
 # utilities
 six>=1.14
 joblib
+dill
 memoized-property
 termcolor
 streamlit
