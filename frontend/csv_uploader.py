@@ -6,13 +6,16 @@ from markdown_predictions.trainer import get_test_data
 
 def page_1():
     file_csv = st.file_uploader("Upload your CSV here", type=([".csv"]))
+    if "file_csv" not in st.session_state:
+            st.session_state.file_csv = file_csv
+    st.session_state.file_csv
 
     if file_csv:
-        df = get_test_data(f'raw_data/{file_csv.name}')
+        df = get_test_data(f'../raw_data/{st.session_state.file_csv.name}')
         if "df" not in st.session_state:
             st.session_state.df = df
             st.session_state.df['markdown_PRE'] = 0.0
-        st.session_state.df
+        st.write(st.session_state.df)
         st.write('CSV Summary')
         num_products = len(df)
         st.write(f'Number of products: {num_products}')
