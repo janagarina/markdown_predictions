@@ -9,7 +9,7 @@ from markdown_predictions.parse_data import LoadSalesData
 
 PRICE_COLS = ["price_PRE", "price_POST"]
 TARGET_SALES = ["quantity_sold_POST", "quantity_sold_sub1_POST"]
-DATE_COLS = ["first_week_sale_POST"]
+DATE_COLS = ["first_week_sale_PRE"]
 
 
 class PreProcessor:
@@ -55,6 +55,7 @@ class PreProcessor:
     def add_2week_sales(self):
         """ Add sales target """
         self.df["two_week_sales"] = self.df[TARGET_SALES].sum(axis=1)
+        self.df = self.df[self.df["two_week_sales"] >= 0]
         self.df.drop(TARGET_SALES, axis=1, inplace=True)
 
     def parse_dates(self):
