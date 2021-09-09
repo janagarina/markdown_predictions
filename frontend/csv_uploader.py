@@ -41,5 +41,5 @@ def page_1():
         target_percent = target/100
         if "target_percent" not in st.session_state:
             st.session_state.target_percent = target_percent
-        unit_target = float(stock) * target_percent
+        unit_target = float(stock) * st.session_state.target_percent
         st.write(f"Unit sales target: {round(unit_target)}")
