@@ -1,21 +1,33 @@
+import sys
+import joblib
 import streamlit as st
 import numpy as np
 import pandas as pd
-import sys
+
 from markdown_predictions.trainer import get_test_data
 
 
+MODEL_PATH = 'markdown_model.joblib'
+
+
 def page_1():
+
+    if "target" not in st.session_state:
+        st.session_state.target = 0
+        st.session_state.model = joblib.load(MODEL_PATH)
+    
     # File uploader for use to drop CSV file
     file_csv = st.file_uploader("Upload your CSV here", type=([".csv"]))
     if file_csv:
         st.session_state.file_csv = file_csv
+
 
     if 'file_csv' in st.session_state:
         df = get_test_data(f'raw_data/{st.session_state.file_csv.name}')
         if "df" not in st.session_state:
             st.session_state.df = df
             st.session_state.df["markdown_PRE"] = 0.0
+            st.session_state.df["predicted_sales"] = st.session_state.model.predict(st.session_state.df.drop(["season_PRE"], axis=1))
         st.write(st.session_state.df)
 
         st.markdown("""
@@ -33,13 +45,17 @@ def page_1():
 
         # Group total stock by sub target and category
         st.write("Stock per target & category")
-        target_stock = st.session_state.df.groupby(["sub_target_PRE","product_category_PRE"])["full_stock"].agg("sum")
-        st.write(target_stock)
+        target_stock = pd.DataFrame(st.session_state.df.groupby(["sub_target_PRE","product_category_PRE"])["full_stock", "predicted_sales"].agg("sum"))
+        target_stock["full_stock"] = target_stock["full_stock"].apply(lambda x: "{:,}".format(x).replace(".0", ""))
+        target_stock["predicted_sales"] = target_stock["predicted_sales"].apply(lambda x: "{:,}".format(round(x)).replace(".0", ""))
+        st.write(target_stock.rename(columns={"full_stock": "Total Stock", "predicted_sales": "Predicted Sales (Units)"}))
 
         # Allow user to set percentage unit sales goal (session state) and display number of products needed to meet goal
-        target = st.number_input("Set unit sales target (%)", min_value=0, max_value = 100, value=0)
-        target_percent = target/100
-        if "target_percent" not in st.session_state:
-            st.session_state.target_percent = target_percent
-        unit_target = float(stock) * st.session_state.target_percent
+        st.session_state.target = st.number_input("Set unit sales target (%)", min_value=0, max_value = 100, value=st.session_state.target)
+
+        target_percent = st.session_state.target/100
+        unit_target = float(stock) * target_percent
         st.write(f"Unit sales target: {round(unit_target)}")
+
+        
+        
