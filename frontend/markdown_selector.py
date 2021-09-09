@@ -12,7 +12,7 @@ def page_2():
     if "df" not in st.session_state:
         return True
     
-    st.write(st.session_state.df)
+    st.write(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]])
     product_selections = (st.session_state.df.reference_name_PRE  +\
                               " (" + st.session_state.df.reference_PRE + ")").tolist()
 

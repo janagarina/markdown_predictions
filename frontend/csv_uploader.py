@@ -28,6 +28,7 @@ def page_1():
             st.session_state.df = df
             st.session_state.df["markdown_PRE"] = 0.0
             st.session_state.df["predicted_sales"] = st.session_state.model.predict(st.session_state.df.drop(["season_PRE"], axis=1))
+            st.session_state.df["predicted_sales"] = st.session_state.df["predicted_sales"].astype(int)
         st.write(st.session_state.df)
 
         st.markdown("""
@@ -40,6 +41,7 @@ def page_1():
 
         # Calculate and display total stock of products
         st.session_state.df["full_stock"] = st.session_state.df["avail_warehouse_stock_PRE"] + st.session_state.df["total_store_stock_PRE"]
+        st.session_state.df["full_stock"] = st.session_state.df["full_stock"].astype(int)
         stock = st.session_state.df["full_stock"].sum()
         st.write(f"Total stock: {stock}")
 
@@ -51,7 +53,7 @@ def page_1():
         st.write(target_stock.rename(columns={"full_stock": "Total Stock", "predicted_sales": "Predicted Sales (Units)"}))
 
         # Allow user to set percentage unit sales goal (session state) and display number of products needed to meet goal
-        st.session_state.target = st.number_input("Set unit sales target (%)", min_value=0, max_value = 100, value=st.session_state.target)
+        target = st.number_input("Set unit sales target (%)", min_value=0, max_value = 100, value=0, key='target')
 
         target_percent = st.session_state.target/100
         unit_target = float(stock) * target_percent
