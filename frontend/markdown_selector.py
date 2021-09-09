@@ -5,13 +5,13 @@ import joblib
 import os
 import altair as alt
 
-model_path = 'markdown_model.joblib'
-loaded_model = joblib.load(model_path)
 
 def page_2():
+    
     st.title("Markdown Selector")
     if "df" not in st.session_state:
         return True
+    
     st.write(st.session_state.df)
     product_selections = (st.session_state.df.reference_name_PRE  +\
                               " (" + st.session_state.df.reference_PRE + ")").tolist()
@@ -28,7 +28,7 @@ def page_2():
         md /= 10
         df_tmp = st.session_state.df[st.session_state.df.reference_PRE == key_ref].copy()
         df_tmp.markdown_PRE = md
-        pred = loaded_model.predict(df_tmp.drop(["season_PRE", "full_stock"], axis=1))
+        pred = st.session_state.model.predict(df_tmp.drop(["season_PRE", "full_stock", "predicted_sales"], axis=1))
         if md == 0:
             plot = [(round(pred[0],0), md * 10)]
         else:
@@ -53,8 +53,15 @@ def page_2():
     base_chart_text = base_chart.mark_text(dy=10, dx=5).encode(text="sales:Q")
     final_chart = alt.layer(base_chart, base_chart_text)
     st.altair_chart(final_chart)
+    
+    markdown = st.slider("Select markdown (%)", min_value=0, max_value=50, step=10, value=int(current_markdown * 100))
+    sumbit_markdown = st.button("Sumbit markdown")
+    if sumbit_markdown:
+        st.session_state.df.markdown_PRE[st.session_state.df.reference_PRE == key_ref] = float(markdown) / 100.
+        updated_prediction = results.sales[results.markdown == float(markdown)].iloc[0]
+        st.session_state.df.predicted_sales[st.session_state.df.reference_PRE == key_ref] = updated_prediction
 
-
+    sumbit_markdown = False
     # chart = (
     #     alt.Chart(
     #         data=results,
