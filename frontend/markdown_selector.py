@@ -1,6 +1,73 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import joblib
+import os
+import altair as alt
+
+model_path = 'markdown_model.joblib'
+loaded_model = joblib.load(model_path)
 
 def page_2():
-    st.title("under construction")
+    st.title("Markdown Selector")
+    if "df" not in st.session_state:
+        return True
+    st.write(st.session_state.df)
+    product_selections = (st.session_state.df.reference_name_PRE  +\
+                              " (" + st.session_state.df.reference_PRE + ")").tolist()
+
+
+    st.session_state.product_selected = st.selectbox('Select a Product', product_selections)
+    st.session_state.product_idx = product_selections.index(st.session_state.product_selected)
+    key_ref = st.session_state.df.reference_PRE.iloc[st.session_state.product_idx]
+    current_markdown = st.session_state.df.markdown_PRE.iloc[st.session_state.product_idx]
+    st.session_state.product_price = st.session_state.df[st.session_state.df.reference_PRE == key_ref]["price_PRE"].iloc[0]
+
+    # Predict sales at each markdown level
+    for md in range(0, 6):
+        md /= 10
+        df_tmp = st.session_state.df[st.session_state.df.reference_PRE == key_ref].copy()
+        df_tmp.markdown_PRE = md
+        pred = loaded_model.predict(df_tmp.drop(["season_PRE", "full_stock"], axis=1))
+        if md == 0:
+            plot = [(round(pred[0],0), md * 10)]
+        else:
+            plot.append((round(pred[0],0), md * 100))
+
+    st.write("Predicted 2-Week Sales versus Markdown %")
+
+    results = pd.DataFrame(plot, columns=["sales", "markdown"])
+    results["original_price"] = st.session_state.product_price
+    results["discounted_price"] = (results.original_price * ((100. - results.markdown)/100.)).apply(lambda n: round(n,2))
+
+    base_chart = alt.Chart(results,
+                 title=f"{st.session_state.product_selected} Unit Sales Forecast"
+                ).properties(width=700, height=400).mark_line(point=True).encode(
+        alt.X("markdown:O", title='Markdown %',  sort=None),
+        alt.Y("sales:Q", title="Predicted 2-Week Unit Sales"),
+        alt.Text("sales:Q"),
+        tooltip = [alt.Tooltip("sum(sales)", title="Predicted Unit Sales"),
+                   alt.Tooltip("sum(discounted_price)", title="Discount Price"),
+                   alt.Tooltip("sum(original_price)", title="Original Price")]
+    )
+    base_chart_text = base_chart.mark_text(dy=10, dx=5).encode(text="sales:Q")
+    final_chart = alt.layer(base_chart, base_chart_text)
+    st.altair_chart(final_chart)
+
+
+    # chart = (
+    #     alt.Chart(
+    #         data=results,
+    #         title="Your title",
+    #     )
+    #     .mark_line()
+    #     .encode(
+    #         x=alt.X("Markdown %", axis=alt.Axis(title="Capacity 1")),
+    #         y=alt.Y("Predicted 2-Week Unit Sales", axis=alt.Axis(title="Capacity 2")),
+    #     )
+    #       )
+
+    # st.altair_chart(chart)
+
+
+

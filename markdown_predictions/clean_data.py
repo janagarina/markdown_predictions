@@ -27,6 +27,7 @@ class PreProcessor:
         """ Drop all rows with a '-' or 'nan' within them """
         self.df = self.df[~(self.df == '-').any(axis=1)]
         self.df = self.df[~(self.df == 'nan').any(axis=1)]
+        self.df = self.df[~(self.df == 'Inconnu').any(axis=1)]
 
     def replace_decimal_in_price_cols(self):
         """ Replace the comma with a decimal point in price columns """
@@ -71,9 +72,9 @@ class PreProcessor:
         self.drop_row_with_missing_entries()
         self.replace_decimal_in_price_cols()
         self.make_columns_numeric()
+        self.parse_dates()
         if train_set:
             self.add_2week_sales()
-            self.parse_dates()
 
 
 def outlier_scan(df, cols, threshold=0.1):
