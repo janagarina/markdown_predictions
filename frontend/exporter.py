@@ -33,5 +33,9 @@ def page_3():
     st.write(f"Percentage achieved: {percent_to_target}%")
     
     # Save CSV of export_df
-    if st.button("Download CSV"):
-        export_df.to_csv("markdown_export.csv")
+    st.download_button(
+        label = "Download CSV",
+        data = export_df.to_csv(index=False).encode(),
+        file_name = "markdown_export.csv",
+        mime = "text/csv"
+    )
