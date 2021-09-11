@@ -1,1 +1,1 @@
-web: pip install markdown_predictions==1.14 && md-pred-run
+web: sh setup.sh && streamlit run frontend/frontend.py
