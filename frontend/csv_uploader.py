@@ -17,13 +17,14 @@ def page_1():
         st.session_state.model = joblib.load(MODEL_PATH)
     
     # File uploader for use to drop CSV file
-    file_csv = st.file_uploader("Upload your CSV here", type=([".csv"]))
-    if file_csv:
-        st.session_state.file_csv = file_csv
+    file_csv = st.file_uploader("Upload your CSV here", type=([".csv"]), key='file_csv')
+    if st.session_state.file_csv:
+        new_df=pd.read_csv(st.session_state.file_csv)
+        new_df.to_csv(st.session_state.file_csv.name)
+ 
 
-
-    if 'file_csv' in st.session_state:
-        df = get_test_data(f'raw_data/{st.session_state.file_csv.name}')
+    if 'file_csv' in st.session_state and file_csv is not None:
+        df=get_test_data(st.session_state.file_csv.name)
         if "df" not in st.session_state:
             st.session_state.df = df
             st.session_state.df["markdown_PRE"] = 0.0
