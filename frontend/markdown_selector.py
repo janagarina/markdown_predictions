@@ -1,3 +1,4 @@
+from altair.vegalite.v4.schema.channels import Color
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -6,18 +7,31 @@ import os
 import altair as alt
 
 
+TABLE_NAMES = {
+               "reference_PRE": "Product ID",
+               "reference_name_PRE": "Product Name",
+               "markdown_PRE": "Markdown",
+               "predicted_sales": "Predicted Sales (Units)"
+               }
+
+
 def page_2():
     
     st.title("Markdown Selector")
     if "df" not in st.session_state:
         return True
-    
-    st.write(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]])
+
+    df_copy = st.session_state.df.copy()[list(TABLE_NAMES.keys())][0:0]
+    my_table = st.dataframe(df_copy.rename(columns=TABLE_NAMES))
+
     product_selections = (st.session_state.df.reference_name_PRE  +\
-                              " (" + st.session_state.df.reference_PRE + ")").tolist()
+                              " (" + st.session_state.df.reference_PRE + ")" ).tolist()
+    
+    if not "product_idx" in st.session_state:
+        st.session_state.product_idx = 0
 
 
-    st.session_state.product_selected = st.selectbox('Select a Product', product_selections)
+    st.session_state.product_selected = st.selectbox('Select a Product', product_selections, index=st.session_state.product_idx)
     st.session_state.product_idx = product_selections.index(st.session_state.product_selected)
     key_ref = st.session_state.df.reference_PRE.iloc[st.session_state.product_idx]
     current_markdown = st.session_state.df.markdown_PRE.iloc[st.session_state.product_idx]
@@ -34,7 +48,7 @@ def page_2():
         else:
             plot.append((round(pred[0],0), md * 100))
 
-    st.write("Predicted 2-Week Sales versus Markdown %")
+    st.write("")
 
     results = pd.DataFrame(plot, columns=["sales", "markdown"])
     results["original_price"] = st.session_state.product_price
@@ -42,7 +56,7 @@ def page_2():
 
     base_chart = alt.Chart(results,
                  title=f"{st.session_state.product_selected} Unit Sales Forecast"
-                ).properties(width=700, height=400).mark_line(point=True).encode(
+                ).properties(width=700, height=400).mark_line(point=True, color="#ec3361").encode(
         alt.X("markdown:O", title='Markdown %',  sort=None),
         alt.Y("sales:Q", title="Predicted 2-Week Unit Sales"),
         alt.Text("sales:Q"),
@@ -50,7 +64,7 @@ def page_2():
                    alt.Tooltip("sum(discounted_price)", title="Discount Price"),
                    alt.Tooltip("sum(original_price)", title="Original Price")]
     )
-    base_chart_text = base_chart.mark_text(dy=10, dx=5).encode(text="sales:Q")
+    base_chart_text = base_chart.mark_text(dy=10, dx=5, color="#ec3361").encode(text="sales:Q")
     final_chart = alt.layer(base_chart, base_chart_text)
     st.altair_chart(final_chart)
     
@@ -60,6 +74,9 @@ def page_2():
         st.session_state.df.markdown_PRE[st.session_state.df.reference_PRE == key_ref] = float(markdown) / 100.
         updated_prediction = results.sales[results.markdown == float(markdown)].iloc[0]
         st.session_state.df.predicted_sales[st.session_state.df.reference_PRE == key_ref] = updated_prediction
+        my_table.add_rows(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]].rename(columns=TABLE_NAMES))
+    else:
+        my_table.add_rows(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]].rename(columns=TABLE_NAMES))
 
     sumbit_markdown = False
     # chart = (
