@@ -7,7 +7,7 @@ requirements = [x.strip() for x in content if 'git+' not in x]
 
 setup(name='markdown_predictions',
       version="1.11",
-      description="Project Description",
+      description="Predicting two-weeks of unit sales for different possible product markdowns",
       packages=find_packages(),
       install_requires=requirements,
       test_suite='tests',
