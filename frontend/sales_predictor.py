@@ -51,14 +51,14 @@ if "df" in st.session_state:
     stock = st.session_state.df["full_stock"].sum()
     st.sidebar.markdown(f"""
     ## Total Stock
-    # {format(round(stock))}
+    # {'{:,}'.format(round(stock))}
     """)
     
     target_percent = st.session_state.target/100
     unit_target = float(stock) * target_percent
     st.sidebar.markdown(f"""
     ## Unit Sales Target
-    # {format(round(unit_target))}
+    # {'{:,}'.format(round(unit_target))}
     """)
     
     total_sales_pred = st.session_state.df["predicted_sales"].sum()
