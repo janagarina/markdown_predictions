@@ -79,6 +79,9 @@ class Trainer(object):
         self.X_nums = NUMERICS
         self.X_objs = OBJECTS
         self.X_dates = DATES
+        
+        if "image_url" in X.columns:
+            self.X.drop(columns=["image_url"], axis=1)
 
         if remove_outliers:
             for outlier in outlier_scan(self.X, self.X_nums, threshold=threshold):

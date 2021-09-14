@@ -40,6 +40,12 @@ class LoadSalesData:
         # Parse csv into dataframe
         seasonal_data = pd.read_csv(filename, index_col=None, encoding='utf-8')
 
+        if "image_url" in seasonal_data.columns:
+            images = seasonal_data.pop("image_url")
+        else:
+            images = None
+        
+
         # Remove all escape characters
         seasonal_data.columns = [col.replace('\r','').replace('\n','').lower() for col in seasonal_data.columns]
 
@@ -65,6 +71,9 @@ class LoadSalesData:
 
         # Add suffix
         seasonal_data = seasonal_data.add_suffix(suffix=f"_{pre_post_toggle}")
+        
+        if images is not None:
+            seasonal_data["image_url"] = images
         return seasonal_data
 
 

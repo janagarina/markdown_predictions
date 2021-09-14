@@ -14,6 +14,7 @@ TABLE_NAMES = {
                "predicted_sales": "Predicted Sales (Units)"
                }
 
+COLUMNS_TO_DROP = ["season_PRE", "full_stock", "predicted_sales"]
 
 def page_2():
     
@@ -42,7 +43,10 @@ def page_2():
         md /= 10
         df_tmp = st.session_state.df[st.session_state.df.reference_PRE == key_ref].copy()
         df_tmp.markdown_PRE = md
-        pred = st.session_state.model.predict(df_tmp.drop(["season_PRE", "full_stock", "predicted_sales"], axis=1))
+        columns_to_drop = COLUMNS_TO_DROP
+        if "image_url" in df_tmp.columns:
+            columns_to_drop = COLUMNS_TO_DROP + ["image_url"]
+        pred = st.session_state.model.predict(df_tmp.drop(columns_to_drop, axis=1))
         if md == 0:
             plot = [(round(pred[0],0), md * 10)]
         else:
@@ -53,7 +57,9 @@ def page_2():
     results = pd.DataFrame(plot, columns=["sales", "markdown"])
     results["original_price"] = st.session_state.product_price
     results["discounted_price"] = (results.original_price * ((100. - results.markdown)/100.)).apply(lambda n: round(n,2))
-
+    
+    st.sidebar.image(st.session_state.df.image_url[st.session_state.df.reference_PRE == key_ref].iloc[0], width=310)
+    
     base_chart = alt.Chart(results,
                  title=f"{st.session_state.product_selected} Unit Sales Forecast"
                 ).properties(width=700, height=400).mark_line(point=True, color="#ec3361").encode(
@@ -79,6 +85,7 @@ def page_2():
         my_table.add_rows(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]].rename(columns=TABLE_NAMES))
 
     sumbit_markdown = False
+    
     # chart = (
     #     alt.Chart(
     #         data=results,
