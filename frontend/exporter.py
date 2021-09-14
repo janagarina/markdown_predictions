@@ -10,7 +10,7 @@ TABLE_NAMES = {
                }
 
 def page_3():
-    st.title("Predicted Sales Summary")
+    st.title("Predicted 2-week Sales Summary")
     # Show dataframe with selected markdowns and predicted sales
     
     if not "df" in st.session_state:
@@ -25,7 +25,7 @@ def page_3():
     
     # Calculate and display sum predicted sales
     total_sales_pred = export_df["Predicted Sales (Units)"].sum()
-    st.write(f"Predicted sales: {'{:,}'.format(round(total_sales_pred))}")
+    st.write(f"Predicted 2-week sales: {'{:,}'.format(round(total_sales_pred))}")
     
     # Calculate and display the precentage of achieved sales
     pred_over_target = (total_sales_pred/round(target_sales))
