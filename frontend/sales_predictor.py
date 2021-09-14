@@ -78,6 +78,10 @@ if "df" in st.session_state:
     target_stock = pd.DataFrame(st.session_state.df.groupby("family_PRE")["full_stock"].agg("sum"))
     target_stock["full_stock"] = target_stock["full_stock"].apply(lambda x: "{:,}".format(x).replace(".0", ""))
     st.sidebar.write(target_stock.rename(columns={"full_stock": "Total Stock"}))
+    
+    # if "product_idx" in st.session_state:
+    #     key_ref = st.session_state.df.reference_PRE.iloc[st.session_state.product_idx]
+    #     st.sidebar.image(st.session_state.df.image_url[st.session_state.df.reference_PRE == key_ref].iloc[0], use_column_width='auto')
 
 # Display the selected page with the session state
 pages[page]()

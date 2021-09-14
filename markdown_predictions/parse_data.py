@@ -41,7 +41,7 @@ class LoadSalesData:
         seasonal_data = pd.read_csv(filename, index_col=None, encoding='utf-8')
 
         if "image_url" in seasonal_data.columns:
-            images = seasonal_data.pop("image_url", None)
+            images = seasonal_data.pop("image_url")
         else:
             images = None
         
@@ -72,7 +72,7 @@ class LoadSalesData:
         # Add suffix
         seasonal_data = seasonal_data.add_suffix(suffix=f"_{pre_post_toggle}")
         
-        if images:
+        if images is not None:
             seasonal_data["image_url"] = images
         return seasonal_data
 

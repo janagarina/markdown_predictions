@@ -8,6 +8,7 @@ from markdown_predictions.trainer import get_test_data
 
 
 MODEL_PATH = 'markdown_model.joblib'
+COLUMNS_TO_DROP = ["season_PRE"]
 
 
 def page_1():
@@ -28,7 +29,10 @@ def page_1():
         if "df" not in st.session_state:
             st.session_state.df = df
             st.session_state.df["markdown_PRE"] = 0.0
-            st.session_state.df["predicted_sales"] = st.session_state.model.predict(st.session_state.df.drop(["season_PRE"], axis=1))
+            columns_to_drop = COLUMNS_TO_DROP
+            if "image_url" in st.session_state.df.columns:
+                columns_to_drop = COLUMNS_TO_DROP + ["image_url"]
+            st.session_state.df["predicted_sales"] = st.session_state.model.predict(st.session_state.df.drop(columns_to_drop, axis=1))
             st.session_state.df["predicted_sales"] = st.session_state.df["predicted_sales"].astype(int)
         st.write(st.session_state.df)
 

@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
 requirements = [x.strip() for x in content if 'git+' not in x]
 
 setup(name='markdown_predictions',
-      version="1.11",
+      version="1.17",
       description="Predicting two-weeks of unit sales for different possible product markdowns",
       packages=find_packages(),
       install_requires=requirements,
