@@ -43,38 +43,39 @@ page = st.sidebar.radio("Select your page", tuple(pages.keys()))
 
 if "df" in st.session_state:
     num_products = len(st.session_state.df)
-    st.sidebar.markdown("""
+    st.sidebar.markdown(f"""
     ## Number of Products
+    # {round(num_products)}
     """)
-    st.sidebar.write('{:,}'.format(round(num_products)))
     
     stock = st.session_state.df["full_stock"].sum()
-    st.sidebar.markdown("""
+    st.sidebar.markdown(f"""
     ## Total Stock
+    # {format(round(stock))}
     """)
-    st.sidebar.write('{:,}'.format(round(stock)))
     
     target_percent = st.session_state.target/100
     unit_target = float(stock) * target_percent
-    st.sidebar.markdown("""
+    st.sidebar.markdown(f"""
     ## Unit Sales Target
+    # {format(round(unit_target))}
     """)
-    st.sidebar.write('{:,}'.format(round(unit_target)))
     
-    st.sidebar.markdown("""
-    ## Percentage of Target Achieved
-    """)
     total_sales_pred = st.session_state.df["predicted_sales"].sum()
     pred_over_target = total_sales_pred/unit_target
+    st.sidebar.markdown(f"""
+    ## Percentage of Target Achieved
+    # {round((pred_over_target * 100),2)}%
+    """)
     progress = st.sidebar.progress(0)
     if total_sales_pred > unit_target:
         progress.progress(1.0,)
     else:
         progress.progress(pred_over_target)
     st.sidebar.markdown("""
-    ## Stock Per Category
+    ## Stock Per Product Family
     """)
-    target_stock = pd.DataFrame(st.session_state.df.groupby("product_category_PRE")["full_stock"].agg("sum"))
+    target_stock = pd.DataFrame(st.session_state.df.groupby("family_PRE")["full_stock"].agg("sum"))
     target_stock["full_stock"] = target_stock["full_stock"].apply(lambda x: "{:,}".format(x).replace(".0", ""))
     st.sidebar.write(target_stock.rename(columns={"full_stock": "Total Stock"}))
 
