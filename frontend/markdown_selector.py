@@ -59,7 +59,7 @@ def page_2():
     results["original_price"] = st.session_state.product_price
     results["discounted_price"] = (results.original_price * ((100. - results.markdown)/100.)).apply(lambda n: round(n,2))
     
-    st.sidebar.image(st.session_state.df.image_url[st.session_state.df.reference_PRE == key_ref].iloc[0], width=310)
+    st.sidebar.image(st.session_state.images[key_ref], width=310)
     
     base_chart = alt.Chart(results,
                  title=f"{st.session_state.product_selected} Unit Sales Forecast"
