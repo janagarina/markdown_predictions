@@ -3,6 +3,8 @@ import joblib
 import streamlit as st
 import numpy as np
 import pandas as pd
+from PIL import Image
+import requests
 
 from markdown_predictions.trainer import get_test_data
 
@@ -11,11 +13,13 @@ MODEL_PATH = 'markdown_model.joblib'
 COLUMNS_TO_DROP = ["season_PRE"]
 
 
+
 def page_1():
 
     if "target" not in st.session_state:
         st.session_state.target = 0
         st.session_state.model = joblib.load(MODEL_PATH)
+        st.session_state.images = {}
     
     # File uploader for use to drop CSV file
     file_csv = st.file_uploader("Upload your CSV here", type=([".csv"]), key='file_csv')
@@ -31,6 +35,10 @@ def page_1():
             st.session_state.df["markdown_PRE"] = 0.0
             columns_to_drop = COLUMNS_TO_DROP
             if "image_url" in st.session_state.df.columns:
+                for image in st.session_state.df.image_url:
+                    product_ref = st.session_state.df[st.session_state.df.image_url == image]["reference_PRE"].iloc[0]
+                    st.session_state.images[product_ref] = Image.open(requests.get(image, stream=True).raw)
+                    
                 columns_to_drop = COLUMNS_TO_DROP + ["image_url"]
             st.session_state.df["predicted_sales"] = st.session_state.model.predict(st.session_state.df.drop(columns_to_drop, axis=1))
             st.session_state.df["predicted_sales"] = st.session_state.df["predicted_sales"].astype(int)
