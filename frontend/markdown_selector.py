@@ -41,7 +41,7 @@ def page_2():
 
     HtmlFile = open(f"{key_ref}.html", 'r', encoding='utf-8')
     chart_code = HtmlFile.read() 
-    st.components.v1.html(chart_code, height = 500, width = 700)
+    st.components.v1.html(chart_code, height = 500, width = 900)
 
     # # Predict sales at each markdown level
     # for md in range(0, 6):
