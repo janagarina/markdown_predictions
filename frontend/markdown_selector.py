@@ -39,23 +39,22 @@ def page_2():
     st.session_state.product_price = st.session_state.df[st.session_state.df.reference_PRE == key_ref]["price_PRE"].iloc[0]
 
     # Predict sales at each markdown level
-    if "product_selected_2" not in st.session_state or st.session_state.product_selected_2 == st.session_state.product_selected:
-        for md in range(0, 6):
-            md /= 10
-            df_tmp = st.session_state.df[st.session_state.df.reference_PRE == key_ref].copy()
-            df_tmp.markdown_PRE = md
-            columns_to_drop = COLUMNS_TO_DROP
-            if "image_url" in df_tmp.columns:
-                columns_to_drop = COLUMNS_TO_DROP + ["image_url"]
-            pred = st.session_state.model.predict(df_tmp.drop(columns_to_drop, axis=1))
-            if md == 0:
-                st.session_state.plot = [(round(pred[0],0), md * 10)]
-            else:
-                st.session_state.plot.append((round(pred[0],0), md * 100))
+    for md in range(0, 6):
+        md /= 10
+        df_tmp = st.session_state.df[st.session_state.df.reference_PRE == key_ref].copy()
+        df_tmp.markdown_PRE = md
+        columns_to_drop = COLUMNS_TO_DROP
+        if "image_url" in df_tmp.columns:
+            columns_to_drop = COLUMNS_TO_DROP + ["image_url"]
+        pred = st.session_state.model.predict(df_tmp.drop(columns_to_drop, axis=1))
+        if md == 0:
+            plot = [(round(pred[0],0), md * 10)]
+        else:
+            plot.append((round(pred[0],0), md * 100))
 
     st.write("")
 
-    results = pd.DataFrame(st.session_state.plot, columns=["sales", "markdown"])
+    results = pd.DataFrame(plot, columns=["sales", "markdown"])
     results["original_price"] = st.session_state.product_price
     results["discounted_price"] = (results.original_price * ((100. - results.markdown)/100.)).apply(lambda n: round(n,2))
     
@@ -87,7 +86,6 @@ def page_2():
 
     sumbit_markdown = False
     
-    st.session_state.product_selected_2 = st.session_state.product_selected
 
     # chart = (
     #     alt.Chart(
