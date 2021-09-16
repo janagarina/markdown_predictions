@@ -34,7 +34,7 @@ def save_plots(df):
         results["original_price"] = st.session_state.product_price
         results["discounted_price"] = (results.original_price * ((100. - results.markdown)/100.)).apply(lambda n: round(n,2))
         base_chart = alt.Chart(results,
-                 title=f"{df.reference_name_PRE} Unit Sales Forecast"
+                 title=f"{key_ref} Unit Sales Forecast"
                 ).properties(width=700, height=400).mark_line(point=True, color="#ec3361").encode(
             alt.X("markdown:O", title='Markdown %',  sort=None),
             alt.Y("sales:Q", title="Predicted 2-Week Unit Sales"),
@@ -46,6 +46,7 @@ def save_plots(df):
         base_chart_text = base_chart.mark_text(dy=10, dx=5, color="#ec3361").encode(text="sales:Q")
         final_chart = alt.layer(base_chart, base_chart_text)
         final_chart.save(f"{key_ref}.html")
+        final_chart.save(f"{key_ref}.json")
 
 def page_1():
 
