@@ -39,9 +39,10 @@ def page_2():
     current_markdown = st.session_state.df.markdown_PRE.iloc[st.session_state.product_idx]
     st.session_state.product_price = st.session_state.df[st.session_state.df.reference_PRE == key_ref]["price_PRE"].iloc[0]
 
-    HtmlFile = open(f"{key_ref}.html", 'r', encoding='utf-8')
-    chart_code = HtmlFile.read() 
-    st.components.v1.html(chart_code, height = 500, width = 900)
+    with open(f"{key_ref}.html", 'r', encoding='utf-8') as html_file:
+        chart_code = html_file.read() 
+        st.components.v1.html(chart_code, height = 500, width = 900)
+    html_file.close()
 
     # # Predict sales at each markdown level
     # for md in range(0, 6):
@@ -89,26 +90,8 @@ def page_2():
             updated_prediction = results["datasets"][results["data"]["name"]][int(markdown/10)]["sales"]
             st.session_state.df.predicted_sales[st.session_state.df.reference_PRE == key_ref] = updated_prediction
             my_table.add_rows(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]].rename(columns=TABLE_NAMES))
-            json_file.close()
+        json_file.close()
     else:
         my_table.add_rows(st.session_state.df[["reference_PRE","reference_name_PRE","markdown_PRE","predicted_sales"]].rename(columns=TABLE_NAMES))
 
     sumbit_markdown = False
-    
-
-    # chart = (
-    #     alt.Chart(
-    #         data=results,
-    #         title="Your title",
-    #     )
-    #     .mark_line()
-    #     .encode(
-    #         x=alt.X("Markdown %", axis=alt.Axis(title="Capacity 1")),
-    #         y=alt.Y("Predicted 2-Week Unit Sales", axis=alt.Axis(title="Capacity 2")),
-    #     )
-    #       )
-
-    # st.altair_chart(chart)
-
-
-
