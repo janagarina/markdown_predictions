@@ -30,3 +30,5 @@ dill
 memoized-property
 termcolor
 streamlit
+altair
+json
