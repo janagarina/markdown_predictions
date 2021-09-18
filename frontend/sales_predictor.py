@@ -19,11 +19,11 @@ st.markdown(
     """
     <style>
     [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
-        width: 500px;
+        width: 450px;
     }
     [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
-        width: 500px;
-        margin-left: -500px;
+        width: 450px;
+        margin-left: -450px;
     }
     </style>
     <style>
@@ -68,7 +68,7 @@ if "df" in st.session_state:
     # {round((pred_over_target * 100),2)}%
     """)
     progress = st.sidebar.progress(0)
-    if total_sales_pred > unit_target:
+    if pred_over_target > 1:
         progress.progress(1.0,)
     else:
         progress.progress(pred_over_target)
